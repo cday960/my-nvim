@@ -55,3 +55,6 @@ require('lazy').setup({
 require('mappings')
 vim.cmd.colorscheme "catppuccin-mocha"
 require('config.telescope')
+require('config.lualine')
+require('config.tabby')
+require('config.toggleterm')

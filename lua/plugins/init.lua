@@ -68,4 +68,17 @@ return {
 		'nvim-lualine/lualine.nvim',
 		dependencies = { 'nvim-tree/nvim-web-devicons' }
 	},
+	{
+		'nanozuki/tabby.nvim',
+		config = function()
+			-- config
+		end,
+	},
+	{
+		'akinsho/toggleterm.nvim',
+		version = '*',
+		opts = {
+			-- config
+		}
+	},
 }
