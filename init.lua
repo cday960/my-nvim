@@ -8,7 +8,7 @@ vim.g.have_nerd_font = true
 vim.o.termguicolors = true
 
 vim.schedule(function()
-    vim.o.clipboard = 'unnamedplus'
+	vim.o.clipboard = 'unnamedplus'
 end)
 
 vim.o.ignorecase = true
@@ -58,3 +58,13 @@ require('config.telescope')
 require('config.lualine')
 require('config.tabby')
 require('config.toggleterm')
+require('config.lsp')
+require('config.cmp')
+
+
+
+-- vim.lsp.start_client({
+-- 	name = 'my-server-name',
+-- 	cmd = {'lua-language-server'},
+-- 	root_dir = vim.fs.dirname(vim.fs.find({'pyproject.toml', 'setup.py'}, { upward = true })[1]),
+-- })
