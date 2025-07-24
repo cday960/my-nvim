@@ -59,7 +59,7 @@ require('config.lualine')
 require('config.tabby')
 require('config.toggleterm')
 require('config.lsp')
-require('config.cmp')
+-- require('config.cmp')
 
 
 

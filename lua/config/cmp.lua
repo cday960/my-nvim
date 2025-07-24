@@ -8,12 +8,11 @@ local servers = {
 	"sqlls",
 }
 
--- for _, lsp in ipairs(servers) do
--- 	lspconfig[lsp].setup {
--- 		-- on_attach = my_custom_on_attach,
--- 		capabilities = capabilities,
--- 	}
--- end
+
+vim.lsp.handlers["textDocument/completion"] = function(err, result, ctx, config)
+	print(vim.inspect(result and result.items or result)) -- view completion payload
+	vim.lsp.handlers["textDocument/completion_default"](err, result, ctx, config)
+end
 
 
 cmp.setup {
@@ -42,3 +41,14 @@ cmp.setup {
 		documentation = cmp.config.window.bordered()
 	}
 }
+
+
+
+
+
+-- for _, lsp in ipairs(servers) do
+-- 	lspconfig[lsp].setup {
+-- 		-- on_attach = my_custom_on_attach,
+-- 		capabilities = capabilities,
+-- 	}
+-- end
