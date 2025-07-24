@@ -41,9 +41,9 @@ vim.lsp.config.sqlls = {
 	settings = {}
 }
 -- vim.lsp.enable("sqlls")
-vim.lsp.enable("sqlls", {
-	capabilities = capabilities,
-})
+-- vim.lsp.enable("sqlls", {
+-- 	capabilities = capabilities,
+-- })
 
 
 ------------------------------------
@@ -75,6 +75,20 @@ cmp.setup {
 		['<C-d>'] = cmp.mapping.scroll_docs(4),
 		['<C-j>'] = cmp.mapping.select_next_item(),
 		['<C-k>'] = cmp.mapping.select_prev_item(),
+		['<Tab>'] = function(fallback)
+			if cmp.visible() then
+				cmp.select_next_item()
+			else
+				fallback()
+			end
+		end,
+		['<S-Tab>'] = function(fallback)
+			if cmp.visible() then
+				cmp.select_prev_item()
+			else
+				fallback()
+			end
+		end,
 		['<C-Space>'] = cmp.mapping.complete(),
 		['<CR>'] = cmp.mapping.confirm {
 			behavior = cmp.ConfirmBehavior.Replace,
