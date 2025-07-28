@@ -113,5 +113,10 @@ return {
 		build = function()
 			require("dbee").install()
 		end,
+		config = function()
+			require("dbee").setup({
+				connections = require("dbee-connections")
+			})
+		end
 	},
 }
