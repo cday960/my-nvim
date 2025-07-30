@@ -1,6 +1,8 @@
 local lspconfig = require('lspconfig')
+local util = require('lspconfig.util')
 local capabilities = require("cmp_nvim_lsp").default_capabilities()
 capabilities.textDocument.completion.completionItem.labelDetailsSupport = true
+capabilities.textDocument.completion.completionItem.snippetSupport = true
 
 
 vim.api.nvim_create_autocmd("LspAttach", {
@@ -103,8 +105,8 @@ vim.lsp.config.pyright = {
 vim.lsp.enable('pyright')
 
 
-local capabilities = vim.lsp.protocol.make_client_capabilities()
-capabilities.textDocument.completion.completionItem.snippetSupport = true
+-- local capabilities = vim.lsp.protocol.make_client_capabilities()
+-- capabilities.textDocument.completion.completionItem.snippetSupport = true
 
 vim.lsp.config.html = {
 	cmd = { "vscode-html-language-server", "--stdio" },
@@ -122,10 +124,65 @@ vim.lsp.config.html = {
 }
 vim.lsp.enable('html')
 
+
 vim.lsp.config.cssls = {
 	capabilities = capabilities,
 }
 vim.lsp.enable('cssls')
+
+vim.lsp.config.ts_ls = {
+	cmd = { "typescript-language-server", "--stdio" },
+	filetypes = { "javascript", "javascriptreact", "javascript.jsx", "typescript", "typescriptreact", "typescript.tsx" },
+	init_options = {
+		hostInfo = "neovim"
+	},
+	root_markers = { "tsconfig.json", "jsconfig.json", "package.json", ".git" }
+}
+vim.lsp.enable('ts_ls')
+
+
+vim.lsp.config.oxlint = {
+	cmd = { "oxc_language_server" },
+	filetypes = { "javascript", "javascriptreact", "javascript.jsx", "typescript", "typescriptreact", "typescript.tsx" },
+	root_dir = function(bufnr, on_dir)
+		local fname = vim.api.nvim_buf_get_name(bufnr)
+		local root_markers = util.insert_package_json({ '.oxlint.json' }, 'oxlint', fname)
+		on_dir(vim.fs.dirname(vim.fs.find(root_markers, { path = fname, upward = true })[1]))
+	end,
+}
+-- vim.lsp.enable('oxlint')
+
+
+-- local eslint_on_attach = vim.lsp.config.eslint.on_attach
+vim.lsp.config.eslint = {
+	settings = {
+		format = {
+			enable = true,
+		}
+	},
+	-- on_attach = function(client, bufnr)
+	-- 	if not eslint_on_attach then return end
+	--
+	-- 	eslint_on_attach(client, bufnr)
+	-- 	vim.api.nvim_create_autocmd("BufWritePre", {
+	-- 		buffer = bufnr,
+	-- 		command = "LspEslintFixAll",
+	-- 	})
+	-- end,
+}
+local base_on_attach = vim.lsp.config.eslint.on_attach
+vim.lsp.config("eslint", {
+	on_attach = function(client, bufnr)
+		if not base_on_attach then return end
+
+		base_on_attach(client, bufnr)
+		vim.api.nvim_create_autocmd("BufWritePre", {
+			buffer = bufnr,
+			command = "LspEslintFixAll",
+		})
+	end,
+})
+vim.lsp.enable('eslint')
 
 
 
