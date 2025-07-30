@@ -28,6 +28,9 @@ vim.lsp.config.lua_ls = {
 			telemetry = {
 				enable = false,
 			},
+			diagnostics = {
+				globals = { 'vim' }
+			}
 		},
 	},
 }
@@ -44,6 +47,86 @@ vim.lsp.config.sqlls = {
 -- vim.lsp.enable("sqlls", {
 -- 	capabilities = capabilities,
 -- })
+
+local function set_python_path(path)
+	local clients = vim.lsp.get_clients {
+		bufnr = vim.api.nvim_get_current_buf(),
+		name = 'pyright',
+	}
+	for _, client in ipairs(clients) do
+		if client.settings then
+			client.settings.python = vim.tbl_deep_extend('force', client.settings.python, { pythonPath = path })
+		else
+			client.config.settings = vim.tbl_deep_extend('force', client.config.settings, { python = { pythonPath = path } })
+		end
+		client.notify('workspace/didChangeConfiguration', { settings = nil })
+	end
+end
+
+vim.lsp.config.pyright = {
+	cmd = { "pyright-langserver", "--stdio" },
+	filetypes = { "python" },
+	root_markers = {
+		"pyproject.toml",
+		"setup.py",
+		"setup.cfg",
+		"requirements.txt",
+		"Pipfile",
+		"pyrightconfig.json",
+		".git"
+	},
+	settings = {
+		python = {
+			analysis = {
+				autoSearchPaths = true,
+				diagnosticMode = "openFilesOnly",
+				useLibraryCodeForTypes = true
+			}
+		}
+	},
+	on_attach = function(client, bufnr)
+		vim.api.nvim_buf_create_user_command(bufnr, 'LspPyrightOrganizeImports', function()
+			client:exec_cmd({
+				command = 'pyright.organizeimports',
+				arguments = { vim.uri_from_bufnr(bufnr) },
+			})
+		end, {
+			desc = 'Organize Imports',
+		})
+		vim.api.nvim_buf_create_user_command(bufnr, 'LspPyrightSetPythonPath', set_python_path, {
+			desc = 'Reconfigure pyright with the provided python path',
+			nargs = 1,
+			complete = 'file',
+		})
+	end,
+}
+vim.lsp.enable('pyright')
+
+
+local capabilities = vim.lsp.protocol.make_client_capabilities()
+capabilities.textDocument.completion.completionItem.snippetSupport = true
+
+vim.lsp.config.html = {
+	cmd = { "vscode-html-language-server", "--stdio" },
+	filetypes = { "html", "templ" },
+	root_markers = { "package.json", ".git" },
+	init_options = {
+		configurationSection = { "html", "css", "javascript" },
+		embeddedLanguages = {
+			css = true,
+			javascript = true
+		},
+		provideFormatter = true
+	},
+	capabilities = capabilities,
+}
+vim.lsp.enable('html')
+
+vim.lsp.config.cssls = {
+	capabilities = capabilities,
+}
+vim.lsp.enable('cssls')
+
 
 
 ------------------------------------

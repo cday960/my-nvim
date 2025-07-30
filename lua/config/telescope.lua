@@ -10,7 +10,7 @@ require('telescope').setup {
 			i = { ['<c-enter>'] = 'to_fuzzy_refine' },
 			n = {
 				['<C-d>'] = function(prompt_bufnr)
-					local current_picker = action_state.get_current_picker(promp_bufnr)
+					local current_picker = action_state.get_current_picker(prompt_bufnr)
 					local selection = action_state.get_selected_entry()
 					if select ~= nil then
 						actions.close(prompt_bufnr)

@@ -113,10 +113,18 @@ return {
 		build = function()
 			require("dbee").install()
 		end,
-		config = function()
-			require("dbee").setup({
-				connections = require("dbee-connections")
-			})
-		end
+		-- config = function()
+		-- 	require("dbee").setup({
+		-- 		connections = require("dbee-connections")
+		-- 	})
+		-- end
 	},
+	{
+		'windwp/nvim-autopairs',
+		event = "InsertEnter",
+		config = true
+	},
+	{
+		'windwp/nvim-ts-autotag'
+	}
 }
