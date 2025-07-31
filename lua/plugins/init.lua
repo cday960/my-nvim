@@ -126,5 +126,13 @@ return {
 	},
 	{
 		'windwp/nvim-ts-autotag'
+	},
+	{
+		'mason-org/mason.nvim',
+		opts = {}
+	},
+	{
+		'stevearc/conform.nvim',
+		opts = {},
 	}
 }

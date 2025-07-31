@@ -1,5 +1,11 @@
 ; extends
 
+(string
+	(string_content) @injection.content
+		(#match? @injection.content "^--sql")
+		(#set! injection.language "sql")
+	)
+
 ; (expression_statement
 ;   (assignment
 ;     left: (identifier) @_name (#eq? @_name "sql" "query")
