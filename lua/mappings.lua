@@ -1,5 +1,8 @@
 local map = vim.keymap.set
 
+map('n', 'j', 'gj')
+map('n', 'k', 'gk')
+
 map('n', '<C-S-left>', ':vertical resize -5<cr>')
 map('n', '<C-S-right>', ':vertical resize +5<cr>')
 map('n', '<C-S-up>', ':resize +5<cr>')
@@ -15,8 +18,11 @@ map('n', '<leader>q', ':q<cr>')
 map('n', '<C-s>', ':w<cr>')
 
 map('n', '<C-f>', ':Neotree toggle<cr>')
+map('n', '<cr>', '/___<cr>')
 
--- TELESCOPE
+-----------------
+--- TELESCOPE ---
+-----------------
 local builtin = require('telescope.builtin')
 vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
 vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
@@ -28,9 +34,12 @@ vim.keymap.set('n', '<leader>si', builtin.diagnostics, { desc = '[S]earch D[i]ag
 vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
 vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
 vim.keymap.set('n', '<leader>sd', builtin.lsp_definitions, { desc = '[S]earch for [D]efinition' })
-vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = 'Find existing buffers' })
 
 
+-----------
+--- SQL ---
+-----------
 function _G.select_sql_block_and_run()
 	local row = vim.api.nvim_win_get_cursor(0)[1]
 	local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
@@ -68,3 +77,9 @@ map("n", "<leader>dr", "<cmd>lua select_sql_block_and_run()<cr>", { desc = "Run 
 map("n", "<leader>h", function()
 	vim.diagnostic.open_float(nil, { focus = false })
 end, { noremap = true, silent = true, desc = "Show LSP Diagnostics under cursor" })
+
+-----------
+--- HOP ---
+-----------
+map('n', 'f', ':HopCamelCaseMW<cr>', { silent = true })
+map('n', 'F', ':HopAnywhereMW<cr>', { silent = true })

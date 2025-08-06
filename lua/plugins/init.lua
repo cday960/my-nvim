@@ -129,10 +129,17 @@ return {
 	},
 	{
 		'mason-org/mason.nvim',
-		opts = {}
+		opts = {},
 	},
 	{
 		'stevearc/conform.nvim',
 		opts = {},
-	}
+	},
+	{
+		'smoka7/hop.nvim',
+		version = "*",
+		opts = {
+			keys = 'etovxqpdygfblzhckisuran'
+		},
+	},
 }
