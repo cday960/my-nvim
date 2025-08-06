@@ -95,6 +95,7 @@ vim.lsp.config.pyright = {
 		end, {
 			desc = 'Organize Imports',
 		})
+
 		vim.api.nvim_buf_create_user_command(bufnr, 'LspPyrightSetPythonPath', set_python_path, {
 			desc = 'Reconfigure pyright with the provided python path',
 			nargs = 1,
@@ -153,7 +154,6 @@ vim.lsp.config.oxlint = {
 -- vim.lsp.enable('oxlint')
 
 
--- local eslint_on_attach = vim.lsp.config.eslint.on_attach
 vim.lsp.config.eslint = {
 	settings = {
 		format = {
@@ -194,6 +194,11 @@ local luasnip = require('luasnip')
 local cmp = require('cmp')
 
 vim.lsp.handlers["textDocument/completion"] = function(err, result, ctx, config)
+	print(vim.inspect(result))
+	return result
+end
+
+vim.lsp.handlers["textDocument/hover"] = function(err, result, ctx, config)
 	print(vim.inspect(result))
 	return result
 end

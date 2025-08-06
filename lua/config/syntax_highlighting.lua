@@ -15,13 +15,7 @@ local colors = {
 require('nvim-treesitter.configs').setup({
 	highlight = {
 		enable = true,
-		-- vim.api.nvim_set_hl(0, "@keyword.sql", { fg = "#b0ffc0", bold = false }),
-		-- vim.api.nvim_set_hl(0, "@keyword.sql", { fg = "#28c62a", bold = false }),
 		vim.api.nvim_set_hl(0, "@keyword.sql", { fg = "#36c438", bold = false }),
-		-- vim.api.nvim_set_hl(0, "@keyword.operator.sql", { fg = "#4287f5", bold = false }),
-		-- vim.api.nvim_set_hl(0, "@type.sql", { fg = "#b2b2b2", bold = false }),
-
-		-- vim.api.nvim_set_hl(0, "@spell.html", { fg = colors.text }),
 		vim.api.nvim_set_hl(0, "@tag.html", { fg = colors.lightblue }),  -- <div>, <a>, etc.
 		vim.api.nvim_set_hl(0, "@tag.delimiter.html", { fg = colors.fg }), -- <, >, </, />
 		vim.api.nvim_set_hl(0, "@attribute.html", { fg = colors.yellow }), -- href, class, id, etc.
@@ -33,14 +27,9 @@ require('nvim-treesitter.configs').setup({
 		vim.api.nvim_set_hl(0, "@markup.heading.1.html", { fg = colors.text }),
 		vim.api.nvim_set_hl(0, "@markup.heading.html", { fg = colors.text }),
 		vim.api.nvim_set_hl(0, "@variable.htmldjango", { fg = colors.text }),
+	},
+	additional_vim_regex_highlighting = { "htmldjango", "html" },
+	injection = {
+		enabled = true,
 	}
 })
-
-
--- vim.api.nvim_set_hl(0, "@tag.html", { fg = colors.red })          -- <div>, <a>, etc.
--- vim.api.nvim_set_hl(0, "@tag.delimiter.html", { fg = colors.fg }) -- <, >, </, />
--- vim.api.nvim_set_hl(0, "@attribute.html", { fg = colors.yellow }) -- href, class, id, etc.
--- vim.api.nvim_set_hl(0, "@string.html", { fg = colors.green })     -- "value" of attributes
--- vim.api.nvim_set_hl(0, "@comment.html", { fg = colors.blue, italic = true })
-
--- vim.api.nvim_set_hl(0, "", {  })
