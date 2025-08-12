@@ -83,3 +83,5 @@ end, { noremap = true, silent = true, desc = "Show LSP Diagnostics under cursor"
 -----------
 map('n', 'f', ':HopCamelCaseMW<cr>', { silent = true })
 map('n', 'F', ':HopAnywhereMW<cr>', { silent = true })
+map('v', 'f', '<cmd>HopCamelCaseMW<cr>', { silent = true })
+map('v', 'F', '<cmd>HopAnywhereMW<cr>', { silent = true })
