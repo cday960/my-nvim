@@ -125,7 +125,8 @@ return {
 		config = true
 	},
 	{
-		'windwp/nvim-ts-autotag'
+		'windwp/nvim-ts-autotag',
+		lazy = false,
 	},
 	{
 		'mason-org/mason.nvim',
