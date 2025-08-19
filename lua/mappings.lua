@@ -15,10 +15,10 @@ map('n', '<leader>4', '4gt')
 map('n', '<leader>5', '5gt')
 
 map('n', '<leader>q', ':q<cr>')
-map('n', '<C-s>', ':w<cr>')
+map('n', '<C-s>', ':w<cr>', { noremap = true })
 
 map('n', '<C-f>', ':Neotree toggle<cr>')
-map('n', '<cr>', '/___<cr>')
+map('n', '<cr>', '/___<cr>', { silent = true })
 
 -----------------
 --- TELESCOPE ---
@@ -40,7 +40,7 @@ vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = 'Find existing
 -----------
 --- SQL ---
 -----------
-function _G.select_sql_block_and_run()
+function _G.SelectSQLBlock()
 	local row = vim.api.nvim_win_get_cursor(0)[1]
 	local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
 
@@ -66,13 +66,24 @@ function _G.select_sql_block_and_run()
 	vim.cmd("normal! V")
 	vim.api.nvim_win_set_cursor(0, { end_line + 1, 0 })
 
-	vim.schedule(function()
-		local keys = vim.api.nvim_replace_termcodes("<leader>mx", true, false, true)
-		vim.api.nvim_feedkeys(keys, "x", false)
-	end)
+	vim.fn.setpos("'<", { 0, start_line + 1, 1, 0 })
+	vim.fn.setpos("'>", { 0, end_line + 1, 1, 0 })
+
+	return start_line, end_line
 end
 
-map("n", "<leader>dr", "<cmd>lua select_sql_block_and_run()<cr>", { desc = "Run query for current hovered block " })
+-- map("n", "<leader>dr", function()
+-- 	_G.SelectSQLBlock()
+-- 	vim.cmd("<Plug>(DBUI_ExecuteQuery)")
+-- end, { desc = "Run current SQL block with Dadbod" })
+
+map("n", "<leader>dr", function()
+		return vim.fn["db#op_exec"]() .. "ip"
+	end,
+	{ expr = true, desc = "Run hovered SQL block with Dadbod" })
+
+map("n", "<leader>dc", ":DBUIFindBuffer<cr>", { desc = "Start Dadbod UI on current buffer" })
+
 
 map("n", "<leader>h", function()
 	vim.diagnostic.open_float(nil, { focus = false })

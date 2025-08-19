@@ -106,20 +106,6 @@ return {
 		dependencies = { "folke/which-key.nvim" },
 	},
 	{
-		"kndndrj/nvim-dbee",
-		dependencies = {
-			"MunifTanjim/nui.nvim",
-		},
-		build = function()
-			require("dbee").install()
-		end,
-		-- config = function()
-		-- 	require("dbee").setup({
-		-- 		connections = require("dbee-connections")
-		-- 	})
-		-- end
-	},
-	{
 		'windwp/nvim-autopairs',
 		event = "InsertEnter",
 		config = true
@@ -156,5 +142,27 @@ return {
 				}
 			}
 		end,
+	},
+	{
+		"tpope/vim-dadbod"
+	},
+	{
+		'kristijanhusak/vim-dadbod-ui',
+		dependencies = {
+			{ 'tpope/vim-dadbod',                     lazy = true },
+			{ 'kristijanhusak/vim-dadbod-completion', ft = { 'sql', 'mysql', 'plsql' }, lazy = true },
+		},
+		cmd = {
+			'DBUI',
+			'DBUIToggle',
+			'DBUIAddConnection',
+			'DBUIFindBuffer',
+		},
+		init = function()
+			vim.g.db_ui_use_nerd_fonts = 1
+		end
+	},
+	{
+		'tpope/vim-dotenv'
 	}
 }

@@ -235,6 +235,7 @@ cmp.setup {
 		{ name = 'nvim_lsp' },
 		{ name = 'buffer' },
 		{ name = 'luasnip' },
+		-- { name = 'vim-dadbod-completion' },
 	},
 	mapping = cmp.mapping.preset.insert({
 		['<C-u>'] = cmp.mapping.scroll_docs(-4),
@@ -285,3 +286,10 @@ cmp.setup {
 		end,
 	}
 }
+
+cmp.setup.filetype({ "sql" }, {
+	sources = {
+		{ name = "vim-dadbod-completion" },
+		{ name = "buffer" },
+	}
+})
