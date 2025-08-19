@@ -185,6 +185,27 @@ vim.lsp.config("eslint", {
 vim.lsp.enable('eslint')
 
 
+vim.lsp.config("yamlls", {
+	cmd = { "yaml-language-server", "--stdio" },
+	filetypes = { "yaml", "yaml.docker-compose", "yaml.gitlab", "yaml.helm-values" },
+	capabilities = capabilities,
+	root_markers = { ".git" },
+	settings = {
+		-- yaml = {
+		-- 	schemas = {
+		-- 		[""] = "",
+		-- 	},
+		-- },
+		redhat = {
+			telemetry = {
+				enabled = false
+			}
+		}
+	}
+})
+vim.lsp.enable('yamlls')
+
+
 
 ------------------------------------
 -- CMP Setup
