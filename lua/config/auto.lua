@@ -57,6 +57,8 @@ vim.api.nvim_create_autocmd({ "FileType", "BufWinEnter" }, {
 -- ── Sticky header that respects gutter (numbers/signs) and horizontal scroll ──
 local sticky_grp = vim.api.nvim_create_augroup("DBOutStickyHeader", { clear = true })
 
+vim.api.nvim_set_hl(0, "DBOutStickyHeader", { bg = "#3b5c54", fg = "#c0caf5" })
+
 -- per-window state: [winid] = { sticky_win, sticky_buf, src_buf, last_leftcol, last_width, last_header, last_textoff }
 local STICKY = {}
 
@@ -126,8 +128,8 @@ local function ensure_header(winid, buf)
 		})
 		vim.wo[swin].wrap, vim.wo[swin].signcolumn, vim.wo[swin].foldcolumn, vim.wo[swin].cursorline = false, "no", "0",
 				false
-		vim.wo[swin].winhl = "Normal:NormalFloat"
-		-- vim.wo[swin].winhl = "hi! link NormalFloat TabLineSel"
+		-- vim.wo[swin].winhl = "Normal:NormalFloat"
+		vim.wo[swin].winhl = "Normal:DBOutStickyHeader"
 
 		STICKY[winid] = {
 			sticky_win = swin,
@@ -154,7 +156,9 @@ local function ensure_header(winid, buf)
 
 	-- update text (sliced to visible range)
 	local text = slice_cols(header, left, inner_w)
+	local underline = text:gsub("%S", "-")
 	vim.bo[s.sticky_buf].modifiable = true
+	-- vim.api.nvim_buf_set_lines(s.sticky_buf, 0, -1, false, { text, underline })
 	vim.api.nvim_buf_set_lines(s.sticky_buf, 0, -1, false, { text })
 	vim.bo[s.sticky_buf].modifiable = false
 
