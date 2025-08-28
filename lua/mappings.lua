@@ -20,6 +20,8 @@ map('n', '<C-s>', ':w<cr>', { noremap = true })
 map('n', '<C-f>', ':Neotree toggle<cr>')
 map('n', '<cr>', '/___<cr>', { silent = true })
 
+map('n', '<leader>V', ':vsplit<cr>', { silent = true, desc = "Open vertical split" })
+
 -----------------
 --- TELESCOPE ---
 -----------------
@@ -72,11 +74,6 @@ function _G.SelectSQLBlock()
 	return start_line, end_line
 end
 
--- map("n", "<leader>dr", function()
--- 	_G.SelectSQLBlock()
--- 	vim.cmd("<Plug>(DBUI_ExecuteQuery)")
--- end, { desc = "Run current SQL block with Dadbod" })
-
 map("n", "<leader>dr", function()
 		return vim.fn["db#op_exec"]() .. "ip"
 	end,
@@ -84,6 +81,7 @@ map("n", "<leader>dr", function()
 
 map("n", "<leader>dc", ":DBUIFindBuffer<cr>", { desc = "Start Dadbod UI on current buffer" })
 
+map("n", "<leader>du", ":DBUIToggle<cr>", { desc = "Toggle Dadbod UI" })
 
 map("n", "<leader>h", function()
 	vim.diagnostic.open_float(nil, { focus = false })
@@ -92,7 +90,7 @@ end, { noremap = true, silent = true, desc = "Show LSP Diagnostics under cursor"
 -----------
 --- HOP ---
 -----------
-map('n', 'f', ':HopCamelCaseMW<cr>', { silent = true })
-map('n', 'F', ':HopAnywhereMW<cr>', { silent = true })
-map('v', 'f', '<cmd>HopCamelCaseMW<cr>', { silent = true })
-map('v', 'F', '<cmd>HopAnywhereMW<cr>', { silent = true })
+map('n', 'f', ':HopCamelCaseMW<cr>', { silent = true, desc = "Hop Camel Case" })
+map('n', 'F', ':HopAnywhereMW<cr>', { silent = true, desc = "Hop Anywhere" })
+map('v', 'f', '<cmd>HopCamelCaseMW<cr>', { silent = true, desc = "Hop Camel Case" })
+map('v', 'F', '<cmd>HopAnywhereMW<cr>', { silent = true, desc = "Hop Anywhere" })
