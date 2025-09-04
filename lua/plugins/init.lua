@@ -37,6 +37,19 @@ return {
 		"catppuccin/nvim", name = "catppuccin", priority = 1000
 	},
 	{
+		"OXY2DEV/markview.nvim",
+		lazy = false,
+		-- priority = 49,
+		priority = 1,
+		preview = {
+			icon_provider = "devicons"
+		},
+		dependencies = {
+			'nvim-treesitter/nvim-treesitter',
+			'nvim-tree/nvim-web-devicons'
+		}
+	},
+	{
 		'nvim-treesitter/nvim-treesitter',
 		lazy = false,
 		tag = "v0.10.0",
@@ -47,7 +60,8 @@ return {
 		'nvim-telescope/telescope.nvim',
 		tag = '0.1.8',
 		dependencies = {
-			'nvim-lua/plenary.nvim'
+			'OXY2DEV/markview.nvim',
+			'nvim-lua/plenary.nvim',
 		},
 	},
 	{
@@ -165,5 +179,17 @@ return {
 	},
 	{
 		'tpope/vim-dotenv'
-	}
+	},
+	-- {
+	-- 	"OXY2DEV/markview.nvim",
+	-- 	lazy = false,
+	-- 	priority = 49,
+	-- 	preview = {
+	-- 		icon_provider = "devicons"
+	-- 	},
+	-- 	dependencies = {
+	-- 		'nvim-treesitter/nvim-treesitter',
+	-- 		'nvim-tree/nvim-web-devicons'
+	-- 	}
+	-- }
 }

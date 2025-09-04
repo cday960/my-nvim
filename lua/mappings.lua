@@ -94,3 +94,28 @@ map('n', 'f', ':HopCamelCaseMW<cr>', { silent = true, desc = "Hop Camel Case" })
 map('n', 'F', ':HopAnywhereMW<cr>', { silent = true, desc = "Hop Anywhere" })
 map('v', 'f', '<cmd>HopCamelCaseMW<cr>', { silent = true, desc = "Hop Camel Case" })
 map('v', 'F', '<cmd>HopAnywhereMW<cr>', { silent = true, desc = "Hop Anywhere" })
+
+----------------
+--- Markview ---
+----------------
+map('n', '<leader>p', ':Markview toggle<cr>', { silent = true, desc = "Toggle Markview preview mode" })
+
+---------------
+--- Luasnip ---
+---------------
+local ls = require("luasnip")
+map('i', '<Tab>', function()
+	if ls.expand_or_jumpable() then
+		ls.expand_or_jump()
+	else
+		return "<Tab>"
+	end
+end, { expr = true, silent = true })
+
+map('i', '<S-Tab>', function()
+	if ls.jumpable(-1) then
+		ls.jump(-1)
+	else
+		return '<S-Tab>'
+	end
+end, { expr = true, silent = true })
