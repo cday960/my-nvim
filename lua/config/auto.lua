@@ -157,10 +157,21 @@ local function ensure_header(winid, buf)
 	-- update text (sliced to visible range)
 	local text = slice_cols(header, left, inner_w)
 	local underline = text:gsub("%S", "-")
+
+	if not (vim.api.nvim_buf_is_valid(s.sticky_buf) and vim.api.nvim_win_is_valid(s.sticky_win)) then
+		close_sticky(winid)
+		return ensure_header(winid, buf)
+	end
+
 	vim.bo[s.sticky_buf].modifiable = true
-	-- vim.api.nvim_buf_set_lines(s.sticky_buf, 0, -1, false, { text, underline })
-	vim.api.nvim_buf_set_lines(s.sticky_buf, 0, -1, false, { text })
+	local ok = pcall(vim.api.nvim_buf_set_lines, s.sticky_buf, 0, -1, false, { text })
 	vim.bo[s.sticky_buf].modifiable = false
+
+	if not ok then
+		close_sticky(winid)
+		return ensure_header(winid, buf)
+	end
+
 
 	-- keep float aligned/reshaped if width or textoff changed
 	local cfg = vim.api.nvim_win_get_config(s.sticky_win)
