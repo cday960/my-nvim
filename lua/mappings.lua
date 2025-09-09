@@ -71,13 +71,17 @@ function _G.SelectSQLBlock()
 	vim.fn.setpos("'<", { 0, start_line + 1, 1, 0 })
 	vim.fn.setpos("'>", { 0, end_line + 1, 1, 0 })
 
+	vim.cmd(("%d,%dDB"):format(start_line + 1, end_line + 1))
+
 	return start_line, end_line
 end
 
-map("n", "<leader>dr", function()
-		return vim.fn["db#op_exec"]() .. "ip"
-	end,
-	{ expr = true, desc = "Run hovered SQL block with Dadbod" })
+-- map("n", "<leader>dr", function()
+-- 		return vim.fn["db#op_exec"]() .. "ip"
+-- 	end,
+-- 	{ expr = true, desc = "Run hovered SQL block with Dadbod" })
+
+map("n", "<leader>dr", SelectSQLBlock, { desc = "Run hovered SQL block with Dadbod" })
 
 map("n", "<leader>dc", ":DBUIFindBuffer<cr>", { desc = "Start Dadbod UI on current buffer" })
 
