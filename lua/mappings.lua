@@ -22,6 +22,9 @@ map('n', '<cr>', '/___<cr>', { silent = true })
 
 map('n', '<leader>V', ':vsplit<cr>', { silent = true, desc = "Open vertical split" })
 
+map('t', '<C-n>', "<C-\\><C-n>", { noremap = true })
+-- map('t', '<C-ESC>', '<ESC>')
+
 -----------------
 --- TELESCOPE ---
 -----------------

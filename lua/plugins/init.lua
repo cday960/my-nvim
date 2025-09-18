@@ -180,6 +180,9 @@ return {
 	{
 		'tpope/vim-dotenv'
 	},
+	{
+		'tpope/vim-surround'
+	}
 	-- {
 	-- 	"OXY2DEV/markview.nvim",
 	-- 	lazy = false,
