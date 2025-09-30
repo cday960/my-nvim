@@ -182,7 +182,7 @@ return {
 	},
 	{
 		'tpope/vim-surround'
-	}
+	},
 	-- {
 	-- 	"OXY2DEV/markview.nvim",
 	-- 	lazy = false,

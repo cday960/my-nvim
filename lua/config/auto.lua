@@ -34,7 +34,8 @@ local function format_dbout(bufnr)
 
 		local view = vim.fn.winsaveview()
 		vim.api.nvim_buf_call(bufnr, function()
-			vim.cmd([[silent keepjumps keepalt %!column -t -s'|']])
+			-- vim.cmd([[silent keepjumps keepalt %!column -t -s'|']])  -- OLD
+			vim.cmd([[silent keepjumps keepalt %!column -t -s'|' -o $'\t']])
 			vim.cmd("silent noautocmd setlocal nomodified")
 		end)
 		vim.fn.winrestview(view)
@@ -58,6 +59,23 @@ vim.api.nvim_create_autocmd({ "FileType", "BufWinEnter" }, {
 local sticky_grp = vim.api.nvim_create_augroup("DBOutStickyHeader", { clear = true })
 
 vim.api.nvim_set_hl(0, "DBOutStickyHeader", { bg = "#3b5c54", fg = "#c0caf5" })
+--
+-- Add near the top (helpers)
+local function expand_tabs(s, ts)
+	local out, col = {}, 0
+	for i = 1, #s do
+		local ch = s:sub(i, i)
+		if ch == "\t" then
+			local spaces = ts - (col % ts)
+			out[#out + 1] = string.rep(" ", spaces)
+			col = col + spaces
+		else
+			out[#out + 1] = ch
+			col = col + 1
+		end
+	end
+	return table.concat(out)
+end
 
 -- per-window state: [winid] = { sticky_win, sticky_buf, src_buf, last_leftcol, last_width, last_header, last_textoff }
 local STICKY = {}
@@ -148,6 +166,9 @@ local function ensure_header(winid, buf)
 	local left = view.leftcol or 0
 	local header = first_nonempty(buf)
 
+	local ts = tonumber(vim.bo[buf].tabstop) or 8
+	header = expand_tabs(header, ts)
+
 	-- only rerender if something changed
 	if left == s.last_leftcol and inner_w == s.last_width and header == s.last_header and off == s.last_textoff then
 		return
@@ -220,3 +241,101 @@ vim.api.nvim_create_autocmd("FileType", {
 		})
 	end,
 })
+
+
+
+------------------------------------------------------------------
+
+-- ── dbout export helpers (pure Lua) ──
+local function is_border_line(s)
+	return s:match("^%s*[%+%-]+[%+%- ]*$") ~= nil
+			or s:match("^%s*%|?%s*[-%s%|]+$") ~= nil
+end
+
+local function split_pipe_row(s)
+	s = s:gsub("^%s*|", ""):gsub("|%s*$", "")
+	local cells = {}
+	for cell in s:gmatch("([^|]+)") do
+		cells[#cells + 1] = (cell:gsub("^%s+", ""):gsub("%s+$", ""))
+	end
+	return cells
+end
+
+local function split_tab_row(s)
+	local cells = {}
+	for cell in s:gmatch("([^\t]+)") do
+		cells[#cells + 1] = cell
+	end
+	return cells
+end
+
+local function line_to_cells(s)
+	if s:find("|", 1, true) then
+		return split_pipe_row(s)
+	elseif s:find("\t", 1, true) then
+		return split_tab_row(s)
+	else
+		return nil
+	end
+end
+
+local function csv_escape(s)
+	if s == nil then return "" end
+	s = tostring(s)
+	if s:find('[,"\r\n]') then
+		s = '"' .. s:gsub('"', '""') .. '"'
+	end
+	return s
+end
+
+local function buffer_rows(buf)
+	local rows = {}
+	for _, ln in ipairs(vim.api.nvim_buf_get_lines(buf, 0, -1, false)) do
+		if #ln > 0 and not is_border_line(ln) then
+			local cells = line_to_cells(ln)
+			if cells and #cells > 0 then rows[#rows + 1] = cells end
+		end
+	end
+	return rows
+end
+
+local function write_csv(buf, path, sep, is_csv)
+	local rows = buffer_rows(buf)
+	if #rows == 0 then
+		vim.notify("dbout export: no table rows detected", vim.log.levels.WARN); return
+	end
+	local ok, err = pcall(function()
+		vim.fn.mkdir(vim.fn.fnamemodify(path, ":h"), "p")
+		local fd = assert(io.open(path, "w"))
+		for _, cells in ipairs(rows) do
+			if is_csv then
+				for i = 1, #cells do cells[i] = csv_escape(cells[i]) end
+			end
+			fd:write(table.concat(cells, sep), "\n")
+		end
+		fd:close()
+	end)
+	if ok then
+		vim.notify(("Wrote %s: %s"):format(is_csv and "CSV" or "TSV", path), vim.log.levels.INFO)
+	else
+		vim.notify("Export failed: " .. tostring(err), vim.log.levels.ERROR)
+	end
+end
+
+vim.api.nvim_create_user_command("DBOutWriteCSV", function(opts)
+	local path = opts.args
+	if path == "" then
+		path = vim.fn.input("Write CSV to: ", (vim.fn.getcwd() .. "/export.csv"))
+		if path == "" then return end
+	end
+	write_csv(vim.api.nvim_get_current_buf(), path, ",", true)
+end, { nargs = "?" })
+
+vim.api.nvim_create_user_command("DBOutWriteTSV", function(opts)
+	local path = opts.args
+	if path == "" then
+		path = vim.fn.input("Write TSV to: ", (vim.fn.getcwd() .. "/export.tsv"))
+		if path == "" then return end
+	end
+	write_csv(vim.api.nvim_get_current_buf(), path, "\t", false)
+end, { nargs = "?" })
