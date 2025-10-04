@@ -22,4 +22,6 @@ require('config.autotag')
 require('config.dadbod')
 require('config.auto')
 require('config.luasnip')
+
+-- Mappings last
 require('mappings')

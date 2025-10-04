@@ -39,6 +39,7 @@ vim.keymap.set('n', '<leader>si', builtin.diagnostics, { desc = '[S]earch D[i]ag
 vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
 vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
 vim.keymap.set('n', '<leader>sd', builtin.lsp_definitions, { desc = '[S]earch for [D]efinition' })
+vim.keymap.set('n', '<leader>sb', builtin.lsp_document_symbols, { desc = 'Search Sym[b]ols' })
 vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = 'Find existing buffers' })
 
 
@@ -79,12 +80,11 @@ function _G.SelectSQLBlock()
 	return start_line, end_line
 end
 
--- map("n", "<leader>dr", function()
--- 		return vim.fn["db#op_exec"]() .. "ip"
--- 	end,
--- 	{ expr = true, desc = "Run hovered SQL block with Dadbod" })
-
-map("n", "<leader>dr", SelectSQLBlock, { desc = "Run hovered SQL block with Dadbod" })
+-- map("n", "<leader>dr", SelectSQLBlock, { desc = "Run hovered SQL block with Dadbod" })
+map("n", "<leader>dr", function()
+	if _G.DBOutCloseAll then _G.DBOutCloseAll() end
+	SelectSQLBlock()
+end, { desc = "Run hovered SQL block with Dadbod" })
 
 map("n", "<leader>dc", ":DBUIFindBuffer<cr>", { desc = "Start Dadbod UI on current buffer" })
 

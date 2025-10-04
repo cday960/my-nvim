@@ -51,6 +51,7 @@ vim.api.nvim_create_autocmd({ "FileType", "BufWinEnter" }, {
 	callback = function(args) format_dbout(args.buf) end,
 })
 
+
 --------------------------------------------------------------------
 --------------------------------------------------------------------
 --------------------------------------------------------------------
@@ -89,6 +90,23 @@ local function close_sticky(winid)
 			{ force = true })
 	end
 	STICKY[winid] = nil
+end
+
+-- Close all dbout buffers
+_G.DBOutCloseAll = function()
+	for winid, _ in pairs(STICKY) do
+		close_sticky(winid)
+	end
+
+	for _, win in ipairs(vim.api.nvim_list_wins()) do
+		local okb, buf = pcall(vim.api.nvim_win_get_buf, win)
+		if okb and vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].filetype == "dbout" then
+			pcall(vim.api.nvim_win_close, win, true)
+			if vim.api.nvim_buf_is_valid(buf) then
+				pcall(vim.api.nvim_buf_delete, buf, { force = true })
+			end
+		end
+	end
 end
 
 local function first_nonempty(buf)
@@ -246,7 +264,7 @@ vim.api.nvim_create_autocmd("FileType", {
 
 ------------------------------------------------------------------
 
--- ── dbout export helpers (pure Lua) ──
+-- dbout export helpers (pure Lua) --
 local function is_border_line(s)
 	return s:match("^%s*[%+%-]+[%+%- ]*$") ~= nil
 			or s:match("^%s*%|?%s*[-%s%|]+$") ~= nil
