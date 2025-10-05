@@ -183,6 +183,11 @@ return {
 	{
 		'tpope/vim-surround'
 	},
+	{
+		'mrcjkb/rustaceanvim',
+		version = '^6',
+		lazy = false,
+	}
 	-- {
 	-- 	"OXY2DEV/markview.nvim",
 	-- 	lazy = false,

@@ -1,5 +1,7 @@
 vim.opt.splitright = true
 
+vim.cmd [[ autocmd BufRead,BufNewFile *.slint set filetype=slint ]]
+
 local grp = vim.api.nvim_create_augroup("DadbodVerticalOnce", { clear = true })
 
 vim.api.nvim_create_autocmd({ "FileType", "BufWinEnter" }, {

@@ -203,8 +203,33 @@ vim.lsp.config("yamlls", {
 		}
 	}
 })
+
 vim.lsp.enable('yamlls')
 
+vim.lsp.config('slint_lsp', {
+	cmd = { "slint-lsp" },
+	filetypes = { "slint" },
+	root_markers = { ".git" },
+})
+
+vim.lsp.enable('slint_lsp')
+
+-- vim.lsp.config('rust_analyzer', {
+-- 	settings = {
+-- 		['rust-analyzer'] = {
+-- 			-- diagnostics = {
+-- 			-- 	enable = true,
+-- 			-- }
+-- 			capabilities = {
+-- 				serverStatusNotification = true,
+-- 			},
+-- 			cmd = { "rust-analyzer" },
+-- 			filetypes = { "rust" },
+-- 		}
+-- 	}
+-- })
+--
+-- vim.lsp.enable('rust_analyzer')
 
 
 ------------------------------------
@@ -238,25 +263,32 @@ cmp.setup {
 		-- { name = 'vim-dadbod-completion' },
 	},
 	mapping = cmp.mapping.preset.insert({
-		['<C-u>'] = cmp.mapping.scroll_docs(-4),
-		['<C-d>'] = cmp.mapping.scroll_docs(4),
+		-- ['<C-u>'] = cmp.mapping.scroll_docs(-4),
+		-- ['<C-d>'] = cmp.mapping.scroll_docs(4),
 		['<C-j>'] = cmp.mapping.select_next_item(),
 		['<C-k>'] = cmp.mapping.select_prev_item(),
 		['<Tab>'] = function(fallback)
-			if cmp.visible() then
-				cmp.select_next_item()
+			if luasnip.expand_or_locally_jumpable() then
+				luasnip.expand_or_jump()
 			else
 				fallback()
 			end
 		end,
-		['<S-Tab>'] = function(fallback)
-			if cmp.visible() then
-				cmp.select_prev_item()
-			else
-				fallback()
-			end
-		end,
-		['<C-Space>'] = cmp.mapping.complete(),
+		-- ['<Tab>'] = function(fallback)
+		-- 	if cmp.visible() then
+		-- 		cmp.select_next_item()
+		-- 	else
+		-- 		fallback()
+		-- 	end
+		-- end,
+		-- ['<S-Tab>'] = function(fallback)
+		-- 	if cmp.visible() then
+		-- 		cmp.select_prev_item()
+		-- 	else
+		-- 		fallback()
+		-- 	end
+		-- end,
+		-- ['<C-Space>'] = cmp.mapping.complete(),
 		['<CR>'] = cmp.mapping.confirm {
 			behavior = cmp.ConfirmBehavior.Replace,
 			select = true,
