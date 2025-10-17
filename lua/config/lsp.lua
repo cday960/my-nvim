@@ -78,23 +78,27 @@ vim.lsp.config.pyright = {
 		".git"
 	},
 	settings = {
+		pyright = {
+			disableOrganizeImports = true,
+		},
 		python = {
 			analysis = {
 				autoSearchPaths = true,
 				diagnosticMode = "openFilesOnly",
-				useLibraryCodeForTypes = true
+				useLibraryCodeForTypes = true,
+				ignore = { '*' },
 			}
 		}
 	},
 	on_attach = function(client, bufnr)
-		vim.api.nvim_buf_create_user_command(bufnr, 'LspPyrightOrganizeImports', function()
-			client:exec_cmd({
-				command = 'pyright.organizeimports',
-				arguments = { vim.uri_from_bufnr(bufnr) },
-			})
-		end, {
-			desc = 'Organize Imports',
-		})
+		-- vim.api.nvim_buf_create_user_command(bufnr, 'LspPyrightOrganizeImports', function()
+		-- 	client:exec_cmd({
+		-- 		command = 'pyright.organizeimports',
+		-- 		arguments = { vim.uri_from_bufnr(bufnr) },
+		-- 	})
+		-- end, {
+		-- 	desc = 'Organize Imports',
+		-- })
 
 		vim.api.nvim_buf_create_user_command(bufnr, 'LspPyrightSetPythonPath', set_python_path, {
 			desc = 'Reconfigure pyright with the provided python path',
@@ -214,6 +218,7 @@ vim.lsp.config('slint_lsp', {
 
 vim.lsp.enable('slint_lsp')
 
+-- Now works from rustace plugin
 -- vim.lsp.config('rust_analyzer', {
 -- 	settings = {
 -- 		['rust-analyzer'] = {
@@ -230,6 +235,15 @@ vim.lsp.enable('slint_lsp')
 -- })
 --
 -- vim.lsp.enable('rust_analyzer')
+
+vim.lsp.config('ruff', {
+	init_options = {
+		settings = {
+			-- lsp settings here
+		}
+	}
+})
+vim.lsp.enable('ruff')
 
 
 ------------------------------------
