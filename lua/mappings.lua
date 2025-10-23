@@ -23,6 +23,8 @@ map('n', '<cr>', '/___<cr>', { silent = true })
 map('n', '<leader>V', ':vsplit<cr>', { silent = true, desc = "Open vertical split" })
 
 map('t', '<C-n>', "<C-\\><C-n>", { noremap = true })
+map('n', '<S-t>', ":tabnew<cr>", { silent = true, desc = "Open new tab" })
+map('n', '<leader>b', "<C-v>", { desc = "Enter visual block mode" })
 -- map('t', '<C-ESC>', '<ESC>')
 
 -----------------
