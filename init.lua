@@ -10,7 +10,6 @@ require('lazy').setup({
 
 require('config.treesitter')
 require('config.syntax_highlighting')
-vim.cmd.colorscheme "catppuccin-mocha"
 
 require('config.auto')
 
@@ -28,5 +27,6 @@ require('config.dadbod')
 
 require('config.luasnip')
 
+require('config.theme')
 -- Mappings last
 require('mappings')

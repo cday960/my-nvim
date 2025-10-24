@@ -37,6 +37,12 @@ return {
 		"catppuccin/nvim", name = "catppuccin", priority = 1000
 	},
 	{
+		"folke/tokyonight.nvim",
+		lazy = false,
+		priority = 1000,
+		opts = {}
+	},
+	{
 		"OXY2DEV/markview.nvim",
 		lazy = false,
 		-- priority = 49,
@@ -187,6 +193,11 @@ return {
 		'mrcjkb/rustaceanvim',
 		version = '^6',
 		lazy = false,
+	},
+	{
+		'xiyaowong/transparent.nvim',
+		lazy = false,
+		priority = 1000
 	}
 	-- {
 	-- 	"OXY2DEV/markview.nvim",
