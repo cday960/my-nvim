@@ -42,3 +42,6 @@ vim.o.inccommand = 'split'
 vim.o.cursorline = true
 
 vim.o.scrolloff = 10
+
+-- VIM DADBOD CONNECTIONS PATH --
+vim.g.db_ui_save_location = vim.fn.expand("~/.config/nvim")
