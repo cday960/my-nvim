@@ -1,4 +1,5 @@
 require('config.options')
+require('config.dadbod')
 
 require('config.lazy')
 require('lazy').setup({
@@ -21,7 +22,6 @@ require('config.mssql')
 require('config.lsp')
 require('config.conform')
 require('config.autotag')
-require('config.dadbod')
 
 -- require('config.auto')
 
