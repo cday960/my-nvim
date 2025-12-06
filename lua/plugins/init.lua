@@ -42,19 +42,19 @@ return {
 		priority = 1000,
 		opts = {}
 	},
-	{
-		"OXY2DEV/markview.nvim",
-		lazy = false,
-		-- priority = 49,
-		priority = 1,
-		preview = {
-			icon_provider = "devicons"
-		},
-		dependencies = {
-			'nvim-treesitter/nvim-treesitter',
-			'nvim-tree/nvim-web-devicons'
-		}
-	},
+	-- {
+	-- 	"OXY2DEV/markview.nvim",
+	-- 	lazy = false,
+	-- 	-- priority = 49,
+	-- 	priority = 1,
+	-- 	preview = {
+	-- 		icon_provider = "devicons"
+	-- 	},
+	-- 	dependencies = {
+	-- 		'nvim-treesitter/nvim-treesitter',
+	-- 		'nvim-tree/nvim-web-devicons'
+	-- 	}
+	-- },
 	{
 		'nvim-treesitter/nvim-treesitter',
 		lazy = false,
@@ -66,7 +66,7 @@ return {
 		'nvim-telescope/telescope.nvim',
 		tag = '0.1.8',
 		dependencies = {
-			'OXY2DEV/markview.nvim',
+			-- 'OXY2DEV/markview.nvim',
 			'nvim-lua/plenary.nvim',
 		},
 	},

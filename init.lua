@@ -22,6 +22,7 @@ require('config.mssql')
 require('config.lsp')
 require('config.conform')
 require('config.autotag')
+require('config.neotree')
 
 -- require('config.auto')
 
