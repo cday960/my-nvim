@@ -8,7 +8,16 @@ require('neo-tree').setup({
 				".git",
 				".venv",
 				".python-version",
+				"__pycache__"
 			}
-		}
-	}
+		},
+		follow_current_file = {
+			enabled = true,
+		},
+	},
+	-- buffers = {
+	-- 	follow_current_file = {
+	-- 		enabled = true,
+	-- 	},
+	-- },
 })

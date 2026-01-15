@@ -27,6 +27,9 @@ map('n', '<S-t>', ":tabnew<cr>", { silent = true, desc = "Open new tab" })
 map('n', '<leader>b', "<C-v>", { desc = "Enter visual block mode" })
 -- map('t', '<C-ESC>', '<ESC>')
 
+map('n', '<leader>l', "<C-6>", { desc = "Swap to previously active buffer" })
+map('n', '<leader>rl', ':set rnu!<cr>', { desc = "Toggle relative line numbers" })
+
 -----------------
 --- TELESCOPE ---
 -----------------

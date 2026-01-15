@@ -123,7 +123,7 @@ vim.lsp.config.html = {
 			css = true,
 			javascript = true
 		},
-		provideFormatter = true
+		provideFormatter = false
 	},
 	capabilities = capabilities,
 }
@@ -236,13 +236,13 @@ vim.lsp.enable('slint_lsp')
 --
 -- vim.lsp.enable('rust_analyzer')
 
-vim.lsp.config('ruff', {
-	init_options = {
-		settings = {
-			-- lsp settings here
-		}
-	}
-})
+-- vim.lsp.config('ruff', {
+-- 	init_options = {
+-- 		settings = {
+-- 			-- lsp settings here
+-- 		}
+-- 	}
+-- })
 vim.lsp.enable('ruff')
 
 
@@ -303,10 +303,11 @@ cmp.setup {
 		-- 	end
 		-- end,
 		-- ['<C-Space>'] = cmp.mapping.complete(),
-		['<CR>'] = cmp.mapping.confirm {
-			behavior = cmp.ConfirmBehavior.Replace,
-			select = true,
-		},
+		--
+		-- ['<CR>'] = cmp.mapping.confirm {
+		-- 	behavior = cmp.ConfirmBehavior.Replace,
+		-- 	select = true,
+		-- },
 	}),
 	window = {
 		completion = cmp.config.window.bordered(),
