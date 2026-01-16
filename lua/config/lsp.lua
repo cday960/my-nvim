@@ -288,22 +288,20 @@ cmp.setup {
 				fallback()
 			end
 		end,
-		-- ['<Tab>'] = function(fallback)
-		-- 	if cmp.visible() then
-		-- 		cmp.select_next_item()
-		-- 	else
-		-- 		fallback()
-		-- 	end
-		-- end,
-		-- ['<S-Tab>'] = function(fallback)
-		-- 	if cmp.visible() then
-		-- 		cmp.select_prev_item()
-		-- 	else
-		-- 		fallback()
-		-- 	end
-		-- end,
-		-- ['<C-Space>'] = cmp.mapping.complete(),
-		--
+		['<C-Space>'] = cmp.mapping.complete(),
+
+		['<CR>'] = cmp.mapping({
+			i = function(fallback)
+				if cmp.visible() and cmp.get_active_entry() then
+					cmp.confirm({ behavior = cmp.ConfirmBehavior.Replace, select = false })
+				else
+					fallback()
+				end
+			end,
+			s = cmp.mapping.confirm({ select = true }),
+			c = cmp.mapping.confirm({ behavior = cmp.ConfirmBehavior.Replace, select = true }),
+		}),
+
 		-- ['<CR>'] = cmp.mapping.confirm {
 		-- 	behavior = cmp.ConfirmBehavior.Replace,
 		-- 	select = true,
@@ -331,7 +329,7 @@ cmp.setup {
 			})[entry.source.name]
 			return vim_item
 		end,
-	}
+	},
 }
 
 cmp.setup.filetype({ "sql" }, {
