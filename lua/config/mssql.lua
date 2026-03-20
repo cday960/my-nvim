@@ -8,6 +8,7 @@ require("mssql").setup({
 			keywordCasing = "Lowercase",
 			datatypeCasing = "Lowercase",
 			placeSelectStatementReferencesOnNewLine = true,
+			alignColumnDefinitionsInColumns = false,
 		},
 		intelliSense = {
 			lowerCaseSuggestions = true,

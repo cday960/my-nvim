@@ -198,6 +198,9 @@ return {
 		'xiyaowong/transparent.nvim',
 		lazy = false,
 		priority = 1000
+	},
+	{
+		'nvim-treesitter/nvim-treesitter-context'
 	}
 	-- {
 	-- 	"OXY2DEV/markview.nvim",

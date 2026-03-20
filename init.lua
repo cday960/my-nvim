@@ -18,11 +18,13 @@ require('config.telescope')
 require('config.lualine')
 require('config.tabby')
 require('config.toggleterm')
+-- SQL LSP
 require('config.mssql')
 require('config.lsp')
 require('config.conform')
 require('config.autotag')
 require('config.neotree')
+require('config.ts_context')
 
 -- require('config.auto')
 
