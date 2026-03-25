@@ -5,20 +5,20 @@ capabilities.textDocument.completion.completionItem.labelDetailsSupport = true
 capabilities.textDocument.completion.completionItem.snippetSupport = true
 
 
-vim.api.nvim_create_autocmd("LspAttach", {
-	group = vim.api.nvim_create_augroup('lsp', { clear = true }),
-	callback = function(args)
-		vim.api.nvim_create_autocmd('BufWritePre', {
-			buffer = args.buf,
-			callback = function()
-				vim.lsp.buf.format {
-					async = false,
-					id = args.data.client_id,
-				}
-			end,
-		})
-	end,
-})
+-- vim.api.nvim_create_autocmd("LspAttach", {
+-- 	group = vim.api.nvim_create_augroup('lsp', { clear = true }),
+-- 	callback = function(args)
+-- 		vim.api.nvim_create_autocmd('BufWritePre', {
+-- 			buffer = args.buf,
+-- 			callback = function()
+-- 				vim.lsp.buf.format {
+-- 					async = false,
+-- 					id = args.data.client_id,
+-- 				}
+-- 			end,
+-- 		})
+-- 	end,
+-- })
 
 vim.lsp.config.lua_ls = {
 	cmd = { "lua-language-server" },

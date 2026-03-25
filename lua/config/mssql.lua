@@ -4,12 +4,12 @@ require("mssql").setup({
 	max_column_width = 50,
 	results_buffer_filetype = "",
 	lsp_settings = {
-		format = {
-			keywordCasing = "Lowercase",
-			datatypeCasing = "Lowercase",
-			placeSelectStatementReferencesOnNewLine = true,
-			alignColumnDefinitionsInColumns = false,
-		},
+		-- format = {
+		-- 	keywordCasing = "Lowercase",
+		-- 	datatypeCasing = "Lowercase",
+		-- 	placeSelectStatementReferencesOnNewLine = true,
+		-- 	alignColumnDefinitionsInColumns = false,
+		-- },
 		intelliSense = {
 			lowerCaseSuggestions = true,
 		}
