@@ -31,42 +31,7 @@ map('n', '<leader>b', "<C-v>", { desc = "Enter visual block mode" })
 map('n', '<leader>l', "<C-6>", { desc = "Swap to previously active buffer" })
 map('n', '<leader>rl', ':set rnu!<cr>', { desc = "Toggle relative line numbers" })
 
--- map('x', 'p', function()
--- 	vim.fn.setreg('p', vim.fn.getregion(vim.fn.getpos('v'), vim.fn.getpos('.'), { type = vim.fn.mode() }))
--- 	vim.cmd('normal! "_dP')
--- end)
-
--- map({ 'n', 'x' }, 'y', function()
--- 	if vim.v.register == '"' then
--- 		return '"ay'
--- 	else
--- 		return 'y'
--- 	end
--- end, { expr = true, noremap = true })
---
--- map('n', 'yy', function()
--- 	if vim.v.register == '"' then
--- 		return '"ayy'
--- 	else
--- 		return 'yy'
--- 	end
--- end, { expr = true, noremap = true })
---
--- map({ 'n', 'x' }, 'p', function()
--- 	if vim.v.register == '"' then
--- 		return '"ap'
--- 	else
--- 		return 'p'
--- 	end
--- end, { expr = true, noremap = true })
---
--- map({ 'n', 'x' }, 'P', function()
--- 	if vim.v.register == '"' then
--- 		return '"aP'
--- 	else
--- 		return 'P'
--- 	end
--- end, { expr = true, noremap = true })
+map('v', '<C-c>', 'y', { silent = true, noremap = true })
 
 -----------------
 --- TELESCOPE ---
@@ -140,10 +105,10 @@ end, { noremap = true, silent = true, desc = "Show LSP Diagnostics under cursor"
 -----------
 --- HOP ---
 -----------
-map('n', 'f', ':HopCamelCaseMW<cr>', { silent = true, desc = "Hop Camel Case" })
-map('n', 'F', ':HopAnywhereMW<cr>', { silent = true, desc = "Hop Anywhere" })
-map('v', 'f', '<cmd>HopCamelCaseMW<cr>', { silent = true, desc = "Hop Camel Case" })
-map('v', 'F', '<cmd>HopAnywhereMW<cr>', { silent = true, desc = "Hop Anywhere" })
+map('n', 'f', ':HopCamelCase<cr>', { silent = true, desc = "Hop Camel Case" })
+map('n', 'F', ':HopCamelCaseMW<cr>', { silent = true, desc = "Hop Anywhere" })
+map('v', 'f', '<cmd>HopCamelCase<cr>', { silent = true, desc = "Hop Camel Case" })
+map('v', 'F', '<cmd>HopCamelCaseMW<cr>', { silent = true, desc = "Hop Anywhere" })
 
 ----------------
 --- Markview ---
