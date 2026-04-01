@@ -1,361 +1,231 @@
 vim.opt.splitright = true
 
-vim.cmd [[ autocmd BufRead,BufNewFile *.slint set filetype=slint ]]
+vim.cmd([[autocmd BufRead,BufNewFile *.slint set filetype=slint]])
 
-local grp = vim.api.nvim_create_augroup("DadbodVerticalOnce", { clear = true })
-
-vim.api.nvim_create_autocmd({ "FileType", "BufWinEnter" }, {
-	group = grp,
+-- kill sqlcmd on exit if sql buffers are open
+vim.api.nvim_create_autocmd("VimLeavePre", {
 	callback = function()
-		-- Only effect dadbod result buffers
-		if vim.bo.filetype ~= "dbout" then return end
-		-- only effect preview windows
-		if not vim.wo.previewwindow then return end
-
-		-- skip if old window
-		local ok, pinned = pcall(vim.api.nvim_win_get_var, 0, "dbout_pinned")
-		if ok and pinned then return end
-
-		-- First time opening preview window
-		vim.cmd("wincmd L")
-
-		-- set pin
-		pcall(vim.api.nvim_win_set_var, 0, "dbout_pinned", true)
-	end,
-})
-
-local function format_dbout(bufnr)
-	if vim.b.dbout_formatted == 1 then return end
-	if vim.fn.executable("column") ~= 1 then return end
-
-	vim.schedule(function()
-		if not vim.api.nvim_buf_is_valid(bufnr) then return end
-		local ro, mod = vim.bo[bufnr].readonly, vim.bo[bufnr].modifiable
-		vim.bo[bufnr].readonly = false
-		vim.bo[bufnr].modifiable = true
-
-		local view = vim.fn.winsaveview()
-		vim.api.nvim_buf_call(bufnr, function()
-			-- vim.cmd([[silent keepjumps keepalt %!column -t -s'|']])  -- OLD
-			vim.cmd([[silent keepjumps keepalt %!column -t -s'|' -o $'\t']])
-			vim.cmd("silent noautocmd setlocal nomodified")
-		end)
-		vim.fn.winrestview(view)
-
-		vim.bo[bufnr].modifiable = mod
-		vim.bo[bufnr].readonly = ro
-		vim.b.dbout_formatted = 1
-	end)
-end
-
-vim.api.nvim_create_autocmd({ "FileType", "BufWinEnter" }, {
-	pattern = "dbout",
-	callback = function(args) format_dbout(args.buf) end,
-})
-
-
---------------------------------------------------------------------
---------------------------------------------------------------------
---------------------------------------------------------------------
-
--- ── Sticky header that respects gutter (numbers/signs) and horizontal scroll ──
-local sticky_grp = vim.api.nvim_create_augroup("DBOutStickyHeader", { clear = true })
-
-vim.api.nvim_set_hl(0, "DBOutStickyHeader", { bg = "#3b5c54", fg = "#c0caf5" })
---
--- Add near the top (helpers)
-local function expand_tabs(s, ts)
-	local out, col = {}, 0
-	for i = 1, #s do
-		local ch = s:sub(i, i)
-		if ch == "\t" then
-			local spaces = ts - (col % ts)
-			out[#out + 1] = string.rep(" ", spaces)
-			col = col + spaces
-		else
-			out[#out + 1] = ch
-			col = col + 1
-		end
-	end
-	return table.concat(out)
-end
-
--- per-window state: [winid] = { sticky_win, sticky_buf, src_buf, last_leftcol, last_width, last_header, last_textoff }
-local STICKY = {}
-
-local function close_sticky(winid)
-	local s = STICKY[winid]
-	if not s then return end
-	if s.sticky_win and vim.api.nvim_win_is_valid(s.sticky_win) then pcall(vim.api.nvim_win_close, s.sticky_win, true) end
-	if s.sticky_buf and vim.api.nvim_buf_is_valid(s.sticky_buf) then
-		pcall(vim.api.nvim_buf_delete, s.sticky_buf,
-			{ force = true })
-	end
-	STICKY[winid] = nil
-end
-
--- Close all dbout buffers
-_G.DBOutCloseAll = function()
-	for winid, _ in pairs(STICKY) do
-		close_sticky(winid)
-	end
-
-	for _, win in ipairs(vim.api.nvim_list_wins()) do
-		local okb, buf = pcall(vim.api.nvim_win_get_buf, win)
-		if okb and vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].filetype == "dbout" then
-			pcall(vim.api.nvim_win_close, win, true)
-			if vim.api.nvim_buf_is_valid(buf) then
-				pcall(vim.api.nvim_buf_delete, buf, { force = true })
+		for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+			if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].filetype == "sql" then
+				vim.fn.system("pkill -f sqlcmd")
 			end
 		end
-	end
-end
-
-local function first_nonempty(buf)
-	local n = vim.api.nvim_buf_line_count(buf)
-	if n == 0 then return " " end
-	for _, ln in ipairs(vim.api.nvim_buf_get_lines(buf, 0, math.min(5, n), false)) do
-		if ln:match("%S") then return ln end
-	end
-	return " "
-end
-
--- slice header to visible columns (ASCII-safe)
-local function slice_cols(s, leftcol, width)
-	local from = leftcol + 1
-	local to   = leftcol + width
-	if from > #s then return string.rep(" ", width) end
-	local piece = s:sub(from, to)
-	local pad = width - #piece
-	if pad > 0 then piece = piece .. string.rep(" ", pad) end
-	return piece
-end
-
-local function textoff_for(winid)
-	local info = vim.fn.getwininfo(winid)
-	if type(info) == "table" and info[1] then
-		return tonumber(info[1].textoff) or 0
-	end
-	return 0
-end
-
-local function ensure_header(winid, buf)
-	local s       = STICKY[winid]
-	local win_w   = vim.api.nvim_win_get_width(winid)
-	local off     = textoff_for(winid)      -- gutter: numbers/signs/folds width
-	local inner_w = math.max(1, win_w - off) -- content area width
-
-	if not (s and vim.api.nvim_win_is_valid(s.sticky_win) and vim.api.nvim_buf_is_valid(s.sticky_buf)) then
-		-- create sticky window/buffer
-		close_sticky(winid)
-		local sbuf = vim.api.nvim_create_buf(false, true)
-		vim.bo[sbuf].buftype, vim.bo[sbuf].bufhidden, vim.bo[sbuf].swapfile = "nofile", "wipe", false
-		vim.bo[sbuf].modifiable = true
-
-		local swin = vim.api.nvim_open_win(sbuf, false, {
-			relative = "win",
-			win = winid,
-			row = 0,
-			col = off,    -- <<< shift right by gutter
-			width = inner_w, -- <<< only cover text area
-			height = 1,
-			focusable = false,
-			style = "minimal",
-			noautocmd = true,
-			zindex = 60,
-		})
-		vim.wo[swin].wrap, vim.wo[swin].signcolumn, vim.wo[swin].foldcolumn, vim.wo[swin].cursorline = false, "no", "0",
-				false
-		-- vim.wo[swin].winhl = "Normal:NormalFloat"
-		vim.wo[swin].winhl = "Normal:DBOutStickyHeader"
-
-		STICKY[winid] = {
-			sticky_win = swin,
-			sticky_buf = sbuf,
-			src_buf = buf,
-			last_leftcol = -1,
-			last_width = -1,
-			last_header = "",
-			last_textoff = -1,
-		}
-		s = STICKY[winid]
-	end
-
-	-- read that window's view (for leftcol) safely
-	local view = vim.api.nvim_win_call(winid, function() return vim.fn.winsaveview() end)
-	local left = view.leftcol or 0
-	local header = first_nonempty(buf)
-
-	local ts = tonumber(vim.bo[buf].tabstop) or 8
-	header = expand_tabs(header, ts)
-
-	-- only rerender if something changed
-	if left == s.last_leftcol and inner_w == s.last_width and header == s.last_header and off == s.last_textoff then
-		return
-	end
-	s.last_leftcol, s.last_width, s.last_header, s.last_textoff = left, inner_w, header, off
-
-	-- update text (sliced to visible range)
-	local text = slice_cols(header, left, inner_w)
-	local underline = text:gsub("%S", "-")
-
-	if not (vim.api.nvim_buf_is_valid(s.sticky_buf) and vim.api.nvim_win_is_valid(s.sticky_win)) then
-		close_sticky(winid)
-		return ensure_header(winid, buf)
-	end
-
-	vim.bo[s.sticky_buf].modifiable = true
-	local ok = pcall(vim.api.nvim_buf_set_lines, s.sticky_buf, 0, -1, false, { text })
-	vim.bo[s.sticky_buf].modifiable = false
-
-	if not ok then
-		close_sticky(winid)
-		return ensure_header(winid, buf)
-	end
-
-
-	-- keep float aligned/reshaped if width or textoff changed
-	local cfg = vim.api.nvim_win_get_config(s.sticky_win)
-	local need = (cfg.width ~= inner_w) or (cfg.col ~= off)
-	if need then
-		cfg.width = inner_w
-		cfg.col   = off
-		pcall(vim.api.nvim_win_set_config, s.sticky_win, cfg)
-	end
-end
-
-vim.api.nvim_create_autocmd("FileType", {
-	group = sticky_grp,
-	pattern = "dbout",
-	callback = function(args)
-		local win, buf = vim.api.nvim_get_current_win(), args.buf
-		ensure_header(win, buf)
-
-		-- update on content changes (rerun query)
-		vim.api.nvim_buf_attach(buf, false, {
-			on_lines = function()
-				vim.schedule(function()
-					if vim.api.nvim_win_is_valid(win) then ensure_header(win, buf) end
-				end)
-				return false
-			end,
-		})
-
-		-- follow horizontal/vertical scroll and resizes (incl. gutter width changes)
-		vim.api.nvim_create_autocmd({ "WinScrolled", "CursorMoved", "CursorMovedI", "WinResized", "OptionSet" }, {
-			group = sticky_grp,
-			callback = function(ev)
-				-- OptionSet captures number/sign/fold changes; filter to current win
-				if ev.event == "OptionSet" and not vim.api.nvim_win_is_valid(win) then return end
-				if vim.api.nvim_win_is_valid(win) then ensure_header(win, buf) end
-			end,
-			desc = "Sync dbout sticky header with scroll/resize/gutter changes",
-		})
-
-		-- cleanup
-		vim.api.nvim_create_autocmd("WinClosed", {
-			group = sticky_grp,
-			callback = function(ev)
-				local closed = tonumber(ev.match); if closed then close_sticky(closed) end
-			end,
-		})
 	end,
 })
 
+-------------------------
+-- dbout -> visidata
+-------------------------
 
 
-------------------------------------------------------------------
+local dbout_grp = vim.api.nvim_create_augroup("DBOutVisidata", { clear = true })
 
--- dbout export helpers (pure Lua) --
-local function is_border_line(s)
-	return s:match("^%s*[%+%-]+[%+%- ]*$") ~= nil
-			or s:match("^%s*%|?%s*[-%s%|]+$") ~= nil
+-- tracked state: { csv_path, term_buf }
+local DBOUT = {}
+
+-- closes a single visidata instance
+local function cleanup(winid)
+	local s = DBOUT[winid]
+	if not s then return end
+	if s.term_buf and vim.api.nvim_buf_is_valid(s.term_buf) then
+		pcall(vim.api.nvim_buf_delete, s.term_buf, { force = true })
+	end
+	if s.csv_path then pcall(os.remove, s.csv_path) end
+	DBOUT[winid] = nil
 end
 
-local function split_pipe_row(s)
-	s = s:gsub("^%s*|", ""):gsub("|%s*$", "")
-	local cells = {}
-	for cell in s:gmatch("([^|]+)") do
-		cells[#cells + 1] = (cell:gsub("^%s+", ""):gsub("%s+$", ""))
+-- closes all open dbout windows
+_G.DBOutCloseAll = function()
+	for winid, _ in pairs(DBOUT) do
+		if vim.api.nvim_win_is_valid(winid) then
+			pcall(vim.api.nvim_win_close, winid, true)
+		end
+		cleanup(winid)
 	end
+end
+
+-- Detects border line after header row
+local function is_border(s)
+	return s:match("^[%-|]+$") ~= nil
+end
+
+
+-- splits a pipe-delimited line into trimmed cells.
+local function split_cells(s)
+	local cells = {}
+	local pos = 1
+	while pos <= #s do
+		local sep = s:find("|", pos, true)
+		if sep then
+			cells[#cells + 1] = s:sub(pos, sep - 1):match("^%s*(.-)%s*$")
+			pos = sep + 1
+		else
+			cells[#cells + 1] = s:sub(pos):match("^%s*(.-)%s*$")
+			break
+		end
+	end
+	-- handle trailing pipe
+	if s:sub(-1) == "|" then
+		cells[#cells + 1] = ""
+	end
+	if #cells == 0 then return nil end
 	return cells
 end
 
-local function split_tab_row(s)
-	local cells = {}
-	for cell in s:gmatch("([^\t]+)") do
-		cells[#cells + 1] = cell
-	end
-	return cells
-end
-
-local function line_to_cells(s)
-	if s:find("|", 1, true) then
-		return split_pipe_row(s)
-	elseif s:find("\t", 1, true) then
-		return split_tab_row(s)
-	else
-		return nil
-	end
-end
-
+-- if a cell value contains a comma, quote, or newline wrap it in double quotes
 local function csv_escape(s)
-	if s == nil then return "" end
-	s = tostring(s)
+	s = tostring(s or "")
 	if s:find('[,"\r\n]') then
-		s = '"' .. s:gsub('"', '""') .. '"'
+		return '"' .. s:gsub('"', '""') .. '"'
 	end
 	return s
 end
 
-local function buffer_rows(buf)
+
+-- reads output lines from dbout, skips empties and border line, splits the
+-- rest into cells. Combines cells into rows then appends them to a csv file.
+local function dbout_to_csv(buf)
+	local path = vim.fn.tempname() .. ".csv"
+	local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
 	local rows = {}
-	for _, ln in ipairs(vim.api.nvim_buf_get_lines(buf, 0, -1, false)) do
-		if #ln > 0 and not is_border_line(ln) then
-			local cells = line_to_cells(ln)
-			if cells and #cells > 0 then rows[#rows + 1] = cells end
+	for _, ln in ipairs(lines) do
+		if #ln > 0 and not is_border(ln) then
+			local cells = split_cells(ln)
+			if cells then rows[#rows + 1] = cells end
 		end
 	end
-	return rows
+
+	if #rows == 0 then return nil end
+
+	local fd = io.open(path, "w")
+	if not fd then return nil end
+
+	-- loop through cells, do csv_escape on cell to prevent double quotes
+	-- and new line symbols from being thrown out.
+	-- write formatted csv line to file.
+	for _, cells in ipairs(rows) do
+		for i = 1, #cells do cells[i] = csv_escape(cells[i]) end
+		fd:write(table.concat(cells, ","), "\n")
+	end
+	fd:close()
+	return path
 end
 
-local function write_csv(buf, path, sep, is_csv)
-	local rows = buffer_rows(buf)
-	if #rows == 0 then
-		vim.notify("dbout export: no table rows detected", vim.log.levels.WARN); return
-	end
-	local ok, err = pcall(function()
-		vim.fn.mkdir(vim.fn.fnamemodify(path, ":h"), "p")
-		local fd = assert(io.open(path, "w"))
-		for _, cells in ipairs(rows) do
-			if is_csv then
-				for i = 1, #cells do cells[i] = csv_escape(cells[i]) end
-			end
-			fd:write(table.concat(cells, sep), "\n")
+
+local function convert_dbout_to_vd()
+	local dbout_buf
+
+	for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+		if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].filetype == "dbout" then
+			dbout_buf = buf
+			break
 		end
-		fd:close()
-	end)
+	end
+
+	if not dbout_buf then
+		vim.notify("No dbout buffer found", vim.log.levels.WARN)
+		return
+	end
+
+	-- find the window
+	local win
+	for _, w in ipairs(vim.api.nvim_list_wins()) do
+		if vim.api.nvim_win_get_buf(w) == dbout_buf then
+			win = w
+			break
+		end
+	end
+	if not win then
+		vim.notify("No window showing dbout", vim.log.levels.WARN)
+		return
+	end
+
+	-- move right
+	vim.api.nvim_set_current_win(win)
+	vim.cmd("wincmd L")
+	win = vim.api.nvim_get_current_win()
+
+	local csv_path = dbout_to_csv(dbout_buf)
+	if not csv_path then
+		vim.notify("dbout: no rows to display", vim.log.levels.WARN)
+		return
+	end
+
+	if vim.fn.executable("vd") ~= 1 then
+		vim.notify("vd not found in PATH", vim.log.levels.ERROR)
+		return
+	end
+
+	local term_buf = vim.api.nvim_create_buf(false, true)
+	vim.bo[term_buf].filetype = ""
+	pcall(function() vim.treesitter.stop(term_buf) end)
+
+	vim.api.nvim_win_set_buf(win, term_buf)
+	vim.fn.termopen("vd " .. vim.fn.shellescape(csv_path), {
+		on_exit = function()
+			vim.schedule(function() cleanup(win) end)
+		end,
+	})
+
+	pcall(function() vim.treesitter.stop(term_buf) end)
+	vim.cmd("startinsert")
+
+	if vim.api.nvim_buf_is_valid(dbout_buf) then
+		pcall(vim.api.nvim_buf_delete, dbout_buf, { force = true })
+	end
+
+	DBOUT[win] = { csv_path = csv_path, term_buf = term_buf }
+end
+
+vim.api.nvim_create_user_command("DBOut", convert_dbout_to_vd, {})
+
+-- Calls cleanup if window is closed using :q
+vim.api.nvim_create_autocmd("WinClosed", {
+	group = dbout_grp,
+	callback = function(ev)
+		local closed = tonumber(ev.match)
+		if closed then cleanup(closed) end
+	end,
+})
+
+vim.api.nvim_create_autocmd({ "FileType", "BufWinEnter", "BufReadPost", "BufNewFile" }, {
+	group = dbout_grp,
+	callback = function(args)
+		if vim.bo[args.buf].filetype ~= "dbout" then return end
+		if not vim.wo.previewwindow then return end
+
+		local ok, done = pcall(vim.api.nvim_buf_get_var, args.buf, "vd_handled")
+		if ok and done then return end
+		pcall(vim.api.nvim_buf_set_var, args.buf, "vd_handled", true)
+
+		vim.defer_fn(convert_dbout_to_vd, 500)
+	end,
+})
+
+
+vim.api.nvim_create_user_command("DBOutSave", function(opts)
+	local csv_path
+	for _, s in pairs(DBOUT) do
+		if s.csv_path then
+			csv_path = s.csv_path; break
+		end
+	end
+	if not csv_path then
+		vim.notify("No dbout CSV to save", vim.log.levels.WARN)
+		return
+	end
+
+	local dest = opts.args
+	if dest == "" then
+		dest = vim.fn.input("Save CSV to: ", vim.fn.getcwd() .. "/export.csv")
+		if dest == "" then return end
+	end
+
+	vim.fn.mkdir(vim.fn.fnamemodify(dest, ":h"), "p")
+	local ok, err = pcall(vim.uv.fs_copyfile, csv_path, dest)
 	if ok then
-		vim.notify(("Wrote %s: %s"):format(is_csv and "CSV" or "TSV", path), vim.log.levels.INFO)
+		vim.notify("Saved: " .. dest, vim.log.levels.INFO)
 	else
-		vim.notify("Export failed: " .. tostring(err), vim.log.levels.ERROR)
+		vim.notify("Save failed: " .. tostring(err), vim.log.levels.ERROR)
 	end
-end
-
-vim.api.nvim_create_user_command("DBOutWriteCSV", function(opts)
-	local path = opts.args
-	if path == "" then
-		path = vim.fn.input("Write CSV to: ", (vim.fn.getcwd() .. "/export.csv"))
-		if path == "" then return end
-	end
-	write_csv(vim.api.nvim_get_current_buf(), path, ",", true)
-end, { nargs = "?" })
-
-vim.api.nvim_create_user_command("DBOutWriteTSV", function(opts)
-	local path = opts.args
-	if path == "" then
-		path = vim.fn.input("Write TSV to: ", (vim.fn.getcwd() .. "/export.tsv"))
-		if path == "" then return end
-	end
-	write_csv(vim.api.nvim_get_current_buf(), path, "\t", false)
-end, { nargs = "?" })
+end, { nargs = "?", complete = "file" })
