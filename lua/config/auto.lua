@@ -21,7 +21,9 @@ vim.api.nvim_create_autocmd("VimLeavePre", {
 local dbout_grp = vim.api.nvim_create_augroup("DBOutVisidata", { clear = true })
 
 -- tracked state: { csv_path, term_buf }
-local DBOUT = {}
+-- local DBOUT = {}
+_G.DBOUT = {}
+_G.last_csv_path = nil
 
 -- closes a single visidata instance
 local function cleanup(winid)
@@ -229,3 +231,85 @@ vim.api.nvim_create_user_command("DBOutSave", function(opts)
 		vim.notify("Save failed: " .. tostring(err), vim.log.levels.ERROR)
 	end
 end, { nargs = "?", complete = "file" })
+
+------------------------------------------
+--- HEATMAP ---
+------------------------------------------
+
+
+
+
+
+vim.api.nvim_create_user_command("DBHeatmap", function(opts)
+	-- parse args respecting quoted strings
+	local args = {}
+	local remaining = opts.args
+	while #remaining > 0 do
+		remaining = remaining:match("^%s*(.-)%s*$")
+		if remaining:sub(1, 1) == '"' then
+			local closing = remaining:find('"', 2)
+			if closing then
+				args[#args + 1] = remaining:sub(2, closing - 1)
+				remaining = remaining:sub(closing + 1)
+			else
+				break
+			end
+		else
+			local word, rest = remaining:match("^(%S+)%s*(.*)")
+			if word then
+				args[#args + 1] = word
+				remaining = rest
+			else
+				break
+			end
+		end
+	end
+
+	if #args < 3 then
+		vim.notify('Usage: :DBHeatmap "row_col" "col_col" filename [title]', vim.log.levels.WARN)
+		return
+	end
+
+
+	local csv_path
+	for _, s in pairs(DBOUT) do
+		if s.csv_path then
+			csv_path = s.csv_path; break
+		end
+	end
+	if not csv_path then
+		-- vim.notify("No dbout CSV found", vim.log.levels.WARN)
+		vim.notify("args count: " .. tostring(#args))
+		return
+	end
+
+
+	local row_col = args[1]
+	local col_col = args[2]
+	local filename = args[3]
+
+	-- add .png if not already there
+	if not filename:match("%.png$") then
+		filename = filename .. ".png"
+	end
+
+	local png_path = vim.fn.getcwd() .. "/" .. filename
+	local title = args[4] or nil
+
+	local cmd = string.format(
+		"python3 ~/.config/nvim/scripts/dbout_heatmap.py %s %s %s %s %s",
+		vim.fn.shellescape(csv_path),
+		vim.fn.shellescape(row_col),
+		vim.fn.shellescape(col_col),
+		vim.fn.shellescape(png_path),
+		title and vim.fn.shellescape(title) or "''"
+	)
+
+	local result = vim.fn.system(cmd)
+	if vim.v.shell_error ~= 0 then
+		vim.notify("Heatmap failed: " .. result, vim.log.levels.ERROR)
+		return
+	end
+
+	vim.notify("Heatmap saved: " .. png_path, vim.log.levels.INFO)
+end, { nargs = "*" })
