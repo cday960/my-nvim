@@ -21,6 +21,7 @@ map('n', '<C-f>', ':Neotree toggle<cr>')
 map('n', '<cr>', '/___<cr>', { silent = true })
 
 map('n', '<leader>V', ':vsplit<cr>', { silent = true, desc = "Open vertical split" })
+map('n', '<leader>S', ':split<cr>', { silent = true, desc = "Open horiz split" })
 
 map('t', '<C-n>', "<C-\\><C-n>", { noremap = true })
 map('t', '<C-h>', '<C-\\><C-n><C-w>h', { noremap = true })
@@ -32,6 +33,7 @@ map('n', '<leader>l', "<C-6>", { desc = "Swap to previously active buffer" })
 map('n', '<leader>rl', ':set rnu!<cr>', { desc = "Toggle relative line numbers" })
 
 map('v', '<C-c>', 'y', { silent = true, noremap = true })
+map('i', '<C-l>', '<ESC><C-w>l', { silent = true })
 
 -----------------
 --- TELESCOPE ---

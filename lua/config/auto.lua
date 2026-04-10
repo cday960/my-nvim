@@ -89,15 +89,47 @@ end
 local function dbout_to_csv(buf)
 	local path = vim.fn.tempname() .. ".csv"
 	local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-	local rows = {}
-	for _, ln in ipairs(lines) do
-		if #ln > 0 and not is_border(ln) then
-			local cells = split_cells(ln)
-			if cells then rows[#rows + 1] = cells end
+
+	-- find the border line "-----|-----|-----|"
+	local header_idx = nil
+	for i, ln in ipairs(lines) do
+		if is_border(ln) then
+			header_idx = i - 1
+			break
 		end
 	end
 
-	if #rows == 0 then return nil end
+	if not header_idx or header_idx < 1 then return nil end
+
+	local rows = {}
+
+	-- header
+	local header_cells = split_cells(lines[header_idx])
+	if not header_cells then return nil end
+	rows[#rows + 1] = header_cells
+
+	-- data rows
+	for i = header_idx + 2, #lines do
+		local ln = lines[i]
+		if #ln > 0 and not is_border(ln) then
+			local cells = split_cells(ln)
+			if cells and #cells == #header_cells then
+				rows[#rows + 1] = cells
+			end
+		end
+	end
+
+	if #rows <= 1 then return nil end
+
+	-- local rows = {}
+	-- for _, ln in ipairs(lines) do
+	-- 	if #ln > 0 and not is_border(ln) then
+	-- 		local cells = split_cells(ln)
+	-- 		if cells then rows[#rows + 1] = cells end
+	-- 	end
+	-- end
+	--
+	-- if #rows == 0 then return nil end
 
 	local fd = io.open(path, "w")
 	if not fd then return nil end
